@@ -5,9 +5,8 @@
 
 Code and data accompanying
 
-> H. Berry and L. Trujillo, *Periodic inputs can lower or raise the firing rate of a
-> neural population: exact nonlinear response and Kramers–Kronig relations*
-> (submitted to Physical Review E, 2026).
+> H. Berry and L. Trujillo, *Exact nonlinear response of next-generation neural mass models: frequency-dependent rate shifts and Kramers–Kronig relations*
+> (preprint, 2026).
 
 The package computes, in closed form, the linear and second-order (Volterra)
 susceptibilities of the Montbrió–Pazó–Roxin firing-rate equations for heterogeneous

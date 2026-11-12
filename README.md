@@ -1,6 +1,6 @@
 # mprresponse
 
-[![tests](https://github.com/OWNER/mpr-nonlinear-response/actions/workflows/tests.yml/badge.svg)](https://github.com/OWNER/mpr-nonlinear-response/actions/workflows/tests.yml)
+[![tests](https://github.com/leotru/mpr-nonlinear-response/actions/workflows/tests.yml/badge.svg)](https://github.com/leotru/mpr-nonlinear-response/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Code and data accompanying
@@ -20,7 +20,7 @@ simulations of large spiking networks.
 Python ≥ 3.11 is required.
 
 ```bash
-git clone https://github.com/OWNER/mpr-nonlinear-response.git
+git clone https://github.com/leotru/mpr-nonlinear-response.git
 cd mpr-nonlinear-response
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"

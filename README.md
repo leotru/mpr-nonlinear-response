@@ -1,4 +1,4 @@
-# mprresponse
+# mpr-response
 
 [![tests](https://github.com/leotru/mpr-nonlinear-response/actions/workflows/tests.yml/badge.svg)](https://github.com/leotru/mpr-nonlinear-response/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)

@@ -15,8 +15,10 @@ def _git_commit() -> str:
         root = Path(__file__).resolve().parents[2]
         out = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
                              capture_output=True, text=True, check=True)
-        dirty = subprocess.run(["git", "-C", str(root), "status", "--porcelain"],
-                               capture_output=True, text=True, check=True).stdout.strip()
+        # modified tracked files only; untracked outputs (e.g. data/) do not count
+        dirty = subprocess.run(
+            ["git", "-C", str(root), "status", "--porcelain", "--untracked-files=no"],
+            capture_output=True, text=True, check=True).stdout.strip()
         return out.stdout.strip() + ("-dirty" if dirty else "")
     except Exception:  # noqa: BLE001  (not a git checkout, git missing, ...)
         return "unknown"

@@ -64,7 +64,7 @@ def population_sweep(cfg: dict, theory: MPRTheory, log: Log = print,
         return noise_floor(x[n0:], t[n0:], W, dW, excl, ps["noise_kmin"], ps["noise_kmax"])
 
     base = run([], [])
-    dc_err = np.sqrt(2) * window_mean_error(base[n0:], int(round(ps["dc_window"] / dt)))
+    dc_err = np.sqrt(2) * window_mean_error(base[n0:], int(ps["dc_window"] / dt))
     out = partial if partial is not None else dict(single=[], two=[])
     out.setdefault("single", [])
     out.setdefault("two", [])

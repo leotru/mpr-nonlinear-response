@@ -26,7 +26,7 @@ frequencies = [1, 3, 10]
 two_tone = [[2.0, 3.0, 0.3]]   # (w1, w2, eps)
 noise_kmin = 3
 noise_kmax = 12
-dc_window = 10.0            # window length for the error of the mean rate
+dc_window = 10.0            # window length for the error of the mean rate (floor(10/dt) steps)
 
 [neuron_map]
 frequencies = [2.0, 10.0]

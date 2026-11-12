@@ -25,11 +25,27 @@ def main() -> None:
 
     cfg = load_config(args.config)
     theory = theory_from_config(cfg)
-    res = neuron_map(cfg, theory, log=lambda s: print(s, flush=True))
-    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(args.out, **res,
-                        metadata=json.dumps(dict(theory=theory.summary(), **metadata(cfg))))
-    print(f"written {args.out}")
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    part = out.with_name(out.stem + ".partial.npz")
+
+    def save(res, path):
+        meta = json.dumps(dict(theory=theory.summary(), **metadata(cfg)))
+        tmp = path.with_name(path.stem + ".tmp.npz")
+        np.savez_compressed(tmp, **res, metadata=meta)
+        tmp.replace(path)
+
+    partial = None
+    if part.exists():                     # resume an interrupted run
+        with np.load(part) as z:
+            partial = {k: z[k] for k in z.files if k != "metadata"}
+            if json.loads(str(z["metadata"]))["config"] != cfg:
+                partial = None
+    res = neuron_map(cfg, theory, log=lambda s: print(s, flush=True),
+                     partial=partial, checkpoint=lambda r: save(r, part))
+    save(res, out)
+    part.unlink(missing_ok=True)
+    print(f"written {out}")
 
 
 if __name__ == "__main__":

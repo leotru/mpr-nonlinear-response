@@ -33,7 +33,7 @@ def metadata(config: dict) -> dict:
     return dict(
         package_version=__version__,
         git_commit=_git_commit(),
-        created=_dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
+        created=_dt.datetime.now(_dt.UTC).isoformat(timespec="seconds"),
         python=platform.python_version(),
         platform=platform.platform(),
         versions=dict(numpy=numpy.__version__, scipy=scipy.__version__,

@@ -86,7 +86,7 @@ class NetworkState:
     x1: np.ndarray
     x2: np.ndarray
 
-    def copy(self) -> "NetworkState":
+    def copy(self) -> NetworkState:
         return NetworkState(self.eta.copy(), self.x1.copy(), self.x2.copy())
 
 

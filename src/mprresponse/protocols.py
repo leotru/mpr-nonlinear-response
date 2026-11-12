@@ -36,8 +36,14 @@ def initial_state(cfg: dict, theory: MPRTheory) -> NetworkState:
     return state
 
 
-def population_sweep(cfg: dict, theory: MPRTheory, log: Log = print) -> dict:
-    """Linear, second-harmonic, mean-rate-shift and intermodulation responses."""
+def population_sweep(cfg: dict, theory: MPRTheory, log: Log = print,
+                     partial: dict | None = None,
+                     checkpoint: Callable[[dict], None] | None = None) -> dict:
+    """Linear, second-harmonic, mean-rate-shift and intermodulation responses.
+
+    ``partial`` holds results of an interrupted run (items already present are
+    skipped) and ``checkpoint`` is called with the results after every item.
+    """
     m, sel, ps = theory, cfg["amplitude_selection"], cfg["population_sweep"]
     dt, n_meas = network_grid(cfg)
     T = n_meas * dt
@@ -59,8 +65,15 @@ def population_sweep(cfg: dict, theory: MPRTheory, log: Log = print) -> dict:
 
     base = run([], [])
     dc_err = np.sqrt(2) * window_mean_error(base[n0:], int(round(ps["dc_window"] / dt)))
-    out = dict(single=[], two=[])
+    out = partial if partial is not None else dict(single=[], two=[])
+    out.setdefault("single", [])
+    out.setdefault("two", [])
+    done_single = {d["w"] for d in out["single"]}
+    done_two = {tuple(d["w12"]) for d in out["two"]}
+    out["baseline_rate"] = float(base[n0:].mean())
     for w in ps["frequencies"]:
+        if w in done_single:
+            continue
         t0 = time.time()
         eps, ode = select_amplitude(m, w, sel["candidates"], sel["ode_transient"], T,
                                     sel["ode_samples"], sel["tol"], sel["max_linear_fraction"],
@@ -78,8 +91,12 @@ def population_sweep(cfg: dict, theory: MPRTheory, log: Log = print) -> dict:
             ode_chi2h=_cplx(ode["chi2_harmonic"]), ode_chi2d=float(ode["chi2_rect"]),
             th_chi1=_cplx(m.chi1_r(w)), th_chi2h=_cplx(m.chi2_r(w, w)),
             th_chi2d=float(m.rectification(w))))
+        if checkpoint:
+            checkpoint(out)
         log(f"single tone w={w:g} eps={eps:g} ({time.time() - t0:.0f} s)")
     for w1, w2, eps in ps["two_tone"]:
+        if (w1, w2) in done_two:
+            continue
         t0 = time.time()
         tt, r = integrate_mpr(m, [eps, eps], [w1, w2], sel["ode_transient"], T, sel["ode_samples"])
         c = fourier_coefficients(tt, r, [w1 + w2, w2 - w1])
@@ -93,13 +110,21 @@ def population_sweep(cfg: dict, theory: MPRTheory, log: Log = print) -> dict:
             dif=_cplx(coef(x, w2 - w1) / norm), dif_err=noise(x, w2 - w1, excl) / norm,
             ode_sum=_cplx(c[w1 + w2] / norm), ode_dif=_cplx(c[w2 - w1] / norm),
             th_sum=_cplx(m.chi2_r(w1, w2)), th_dif=_cplx(m.chi2_r(w2, -w1))))
+        if checkpoint:
+            checkpoint(out)
         log(f"two tones ({w1:g}, {w2:g}) eps={eps:g} ({time.time() - t0:.0f} s)")
-    out["baseline_rate"] = float(base[n0:].mean())
+    out["single"].sort(key=lambda d: d["w"])
     return out
 
 
-def neuron_map(cfg: dict, theory: MPRTheory, log: Log = print) -> dict:
-    """Time-averaged rate of every neuron with and without periodic stimulation."""
+def neuron_map(cfg: dict, theory: MPRTheory, log: Log = print,
+               partial: dict | None = None,
+               checkpoint: Callable[[dict], None] | None = None) -> dict:
+    """Time-averaged rate of every neuron with and without periodic stimulation.
+
+    ``partial``/``checkpoint`` allow resuming an interrupted run (see
+    :func:`population_sweep`); rows with ``done == False`` are recomputed.
+    """
     m, sel, nm = theory, cfg["amplitude_selection"], cfg["neuron_map"]
     dt, _ = network_grid(cfg)
     n0 = int(round(nm["transient_over_pi"] * np.pi / dt))
@@ -112,17 +137,26 @@ def neuron_map(cfg: dict, theory: MPRTheory, log: Log = print) -> dict:
                           n_measure_start=n0)
         return cyc / T
 
-    base = rates([], [])
-    log("baseline done")
     freqs = np.asarray(nm["frequencies"], float)
-    eps_all = np.zeros(freqs.size)
-    stim = np.zeros((freqs.size, base.size))
+    if partial is not None and np.array_equal(partial.get("frequencies"), freqs):
+        res = partial
+    else:
+        base = rates([], [])
+        res = dict(frequencies=freqs, eps=np.zeros(freqs.size), base_rate=base,
+                   stim_rate=np.zeros((freqs.size, base.size)), window=T,
+                   done=np.zeros(freqs.size, dtype=bool))
+        log("baseline done")
     for i, w in enumerate(freqs):
+        if res["done"][i]:
+            continue
         t0 = time.time()
         eps, _ = select_amplitude(m, w, sel["candidates"], sel["ode_transient"], T,
                                   nm["ode_samples"], sel["tol"], sel["max_linear_fraction"],
                                   check_harmonic=False)
-        eps_all[i] = eps
-        stim[i] = rates([eps], [w])
+        res["eps"][i] = eps
+        res["stim_rate"][i] = rates([eps], [w])
+        res["done"][i] = True
+        if checkpoint:
+            checkpoint(res)
         log(f"w={w:g} eps={eps:g} ({time.time() - t0:.0f} s)")
-    return dict(frequencies=freqs, eps=eps_all, base_rate=base, stim_rate=stim, window=T)
+    return res

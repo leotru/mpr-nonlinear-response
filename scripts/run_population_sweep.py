@@ -23,13 +23,27 @@ def main() -> None:
 
     cfg = load_config(args.config)
     theory = theory_from_config(cfg)
-    results = population_sweep(cfg, theory, log=lambda s: print(s, flush=True))
-    results["theory"] = theory.summary()
-    results["metadata"] = metadata(cfg)
-    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    with open(args.out, "w") as f:
-        json.dump(results, f, indent=1)
-    print(f"written {args.out}")
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    part = out.with_suffix(".partial.json")
+
+    def save(res, path):
+        tmp = path.with_suffix(".tmp")
+        with open(tmp, "w") as f:
+            json.dump(dict(res, theory=theory.summary(), metadata=metadata(cfg)), f, indent=1)
+        tmp.replace(path)
+
+    partial = None
+    if part.exists():                     # resume an interrupted run
+        with open(part) as f:
+            partial = json.load(f)
+        if partial.get("metadata", {}).get("config") != cfg:
+            partial = None
+    results = population_sweep(cfg, theory, log=lambda s: print(s, flush=True),
+                               partial=partial, checkpoint=lambda r: save(r, part))
+    save(results, out)
+    part.unlink(missing_ok=True)
+    print(f"written {out}")
 
 
 if __name__ == "__main__":

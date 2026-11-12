@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the article and the software as below."
+title: "mprresponse: exact nonlinear response of the Montbrió-Pazó-Roxin firing-rate equations"
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/OWNER/mpr-nonlinear-response"
+authors:
+  - family-names: Berry
+    given-names: Hugues
+    orcid: "https://orcid.org/0000-0003-3470-683X"
+    affiliation: "AIstroSight, Inria Lyon Centre, Hospices Civils de Lyon, Université Claude Bernard Lyon 1"
+  - family-names: Trujillo
+    given-names: Leonardo
+    orcid: "https://orcid.org/0000-0001-9995-4135"
+    affiliation: "AIstroSight, Inria Lyon Centre; Université de Lyon, INSA Lyon, Université Claude Bernard Lyon 1, CNRS UMR5240"
+preferred-citation:
+  type: article
+  title: "Periodic inputs can lower or raise the firing rate of a neural population: exact nonlinear response and Kramers-Kronig relations"
+  authors:
+    - family-names: Berry
+      given-names: Hugues
+    - family-names: Trujillo
+      given-names: Leonardo
+  journal: "Physical Review E"
+  year: 2026
+  status: submitted

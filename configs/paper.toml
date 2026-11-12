@@ -1,0 +1,36 @@
+# Parameters used for all results in the manuscript.
+# Units: time in units of the membrane time constant tau, rates in 1/tau.
+
+[model]
+eta_bar = -3.0
+J = 15.0
+Delta = 1.0
+
+[network]
+N = 20000
+seed = 0                    # permutation of initial voltages on the OA manifold
+initial_transient = 60.0    # unperturbed transient before the reference state is stored
+window_over_pi = 80         # measurement window T = 80 pi (frequency grid 2 pi / T = 0.025)
+steps_per_window = 125000   # dt = T / steps ~ 2.0e-3
+transient_over_pi = 40      # discarded after stimulus onset
+
+[amplitude_selection]
+candidates = [3, 2, 1.5, 1, 0.7, 0.5, 0.35, 0.25, 0.15, 0.1, 0.07, 0.05]
+tol = 0.03                  # max relative deviation of full MPR from second order
+max_linear_fraction = 0.35  # |chi1| eps <= 0.35 r*
+ode_transient = 150.0
+ode_samples = 80001
+
+[population_sweep]
+frequencies = [0.5, 1, 1.5, 2, 2.3, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10, 12]
+two_tone = [[2.0, 3.0, 0.3], [1.0, 4.0, 0.3], [3.5, 6.0, 0.5]]   # (w1, w2, eps)
+noise_kmin = 3
+noise_kmax = 12
+dc_window = 10.0            # window length for the error of the mean rate
+
+[neuron_map]
+frequencies = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0,
+               7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0]
+window_over_pi = 40
+transient_over_pi = 40
+ode_samples = 30001
